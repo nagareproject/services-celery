@@ -40,8 +40,8 @@ from celery.utils import collections
 from celery.schedules import crontab
 from celery.bin import celery as command
 
-from nagare.services import plugin
 from nagare.server import reference
+from nagare.services import plugin, proxy
 
 SPEC_TYPES = {'int': 'integer', 'bool': 'boolean'}
 CRONTAB_PARAMS = ('minute', 'hour', 'day_of_week', 'day_of_month', 'month_of_year')
@@ -124,16 +124,10 @@ def create_spec(namespace_name, namespace):
     return spec
 
 
-class CeleryService(plugin.Plugin):
+class _CeleryService(object):
     CELERY_FACTORY = celery.Celery
-    CONFIG_SPEC = dict(
-        create_spec((), defaults.NAMESPACES),
-        main='string(default=nagare.application.$app_name)',
-        tasks='list(default=list())',
-        on_configure='string(default=None)'
-    )
 
-    def __init__(self, name, dist, main, on_configure, tasks, **config):
+    def __init__(self, name, dist, config_sections, main, on_configure, tasks, **config):
         """Initialization
 
         In:
@@ -146,7 +140,6 @@ class CeleryService(plugin.Plugin):
         celery_config = {}
         app_tasks = {name: {} for name in tasks}
 
-        config_sections = {section for section, parameters in self.CONFIG_SPEC.items() if isinstance(parameters, dict)}
         for section, parameters in list(config.items()):
             if isinstance(parameters, dict):
                 if (section not in config_sections):
@@ -185,12 +178,6 @@ class CeleryService(plugin.Plugin):
             reference.load_object(on_configure)[0](celery_config)
 
         self.celery = self.CELERY_FACTORY(main, log='nagare.services.celery:Logging', config_source=celery_config)
-
-        super(CeleryService, self).__init__(
-            name, dist,
-            main=main, on_configure=on_configure, tasks=tasks,
-            **config
-        )
 
         self.files = set()
         for task, parameters in app_tasks.items():
@@ -240,3 +227,25 @@ class CeleryService(plugin.Plugin):
         control.no_color = no_color
         control.quiet = quiet
         control.run(subcommand, *args, **arguments)
+
+
+@proxy.proxy_to(_CeleryService, lambda self: self.service, {'handle_start'})
+class CeleryService(plugin.Plugin):
+    CONFIG_SPEC = dict(
+        create_spec((), defaults.NAMESPACES),
+        main='string(default=nagare.application.$app_name)',
+        tasks='list(default=list())',
+        on_configure='string(default=None)',
+        watch='boolean(default=True)'
+    )
+    service = None
+
+    def __init__(self, name, dist, services_service, **config):
+        services_service(super(CeleryService, self).__init__, name, dist, **config)
+
+        config_sections = {section for section, parameters in self.CONFIG_SPEC.items() if isinstance(parameters, dict)}
+        self.__class__.service = services_service(_CeleryService, name, dist, config_sections, **config)
+
+    @property
+    def AsyncResult(self):
+        return self.service.AsyncResult
