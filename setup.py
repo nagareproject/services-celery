@@ -19,23 +19,6 @@ here = path.normpath(path.dirname(__file__))
 with open(path.join(here, 'README.rst')) as long_description:
     LONG_DESCRIPTION = long_description.read()
 
-from celery.app import Celery
-from celery.bin import control
-
-from nagare.admin import celery
-
-inspect_commands = []
-for command_name in control.inspect(Celery()).choices:
-    class_name = 'Inspect' + command_name.replace('_', ' ').title().replace(' ', '')
-    if hasattr(celery, class_name):
-        inspect_commands.append('{}=nagare.admin.celery:{}'.format(command_name.replace('_', '-'), class_name))
-
-control_commands = []
-for command_name in control.control(Celery()).choices:
-    class_name = 'Control' + command_name.replace('_', ' ').title().replace(' ', '')
-    if hasattr(celery, class_name):
-        control_commands.append('{}=nagare.admin.celery:{}'.format(command_name.replace('_', '-'), class_name))
-
 setup(
     name='nagare-services-celery',
     author='Net-ng',
@@ -95,9 +78,38 @@ setup(
             'report=nagare.admin.celery:Report'
         ],
 
-        'nagare.commands.celery.inspect': inspect_commands,
+        'nagare.commands.celery.inspect': [
+            'report=nagare.admin.celery:InspectReport',
+            'conf=nagare.admin.celery:InspectConf',
+            'query-task=nagare.admin.celery:InspectQueryTask',
+            'clock=nagare.admin.celery:InspectClock',
+            'ping=nagare.admin.celery:InspectPing',
+            'stats=nagare.admin.celery:InspectStats',
+            'scheduled=nagare.admin.celery:InspectScheduled',
+            'reserved=nagare.admin.celery:InspectReserved',
+            'active=nagare.admin.celery:InspectActive',
+            'revoked=nagare.admin.celery:InspectRevoked',
+            'registered=nagare.admin.celery:InspectRegistered',
+            'active-queues=nagare.admin.celery:InspectActiveQueues'
+        ],
 
-        'nagare.commands.celery.control': control_commands,
+        'nagare.commands.celery.control': [
+            'revoke=nagare.admin.celery:ControlRevoke',
+            'terminate=nagare.admin.celery:ControlTerminate',
+            'rate-limit=nagare.admin.celery:ControlRateLimit',
+            'time-limit=nagare.admin.celery:ControlTimeLimit',
+            'election=nagare.admin.celery:ControlElection',
+            'enable-events=nagare.admin.celery:ControlEnableEvents',
+            'disable-events=nagare.admin.celery:ControlDisableEvents',
+            'heartbeat=nagare.admin.celery:ControlHeartbeat',
+            'pool-grow=nagare.admin.celery:ControlPoolGrow',
+            'pool-shrink=nagare.admin.celery:ControlPoolShrink',
+            'pool-restart=nagare.admin.celery:ControlPoolRestart',
+            'autoscale=nagare.admin.celery:ControlAutoscale',
+            'shutdown=nagare.admin.celery:ControlShutdown',
+            'add-consumer=nagare.admin.celery:ControlAddConsumer',
+            'cancel-consumer=nagare.admin.celery:ControlCancelConsumer'
+        ],
 
         'nagare.services': [
             'celery=nagare.services.celery:CeleryService'
