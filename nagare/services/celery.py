@@ -193,6 +193,11 @@ class _CeleryService(object):
         return self.celery.AsyncResult
 
     def serve(self, no_color, quiet, **arguments):
+        app = self.services(self.services['application'].create)
+
+        for service in self.services.start_handlers:
+            self.services(service.handle_start, app)
+
         worker = self.celery.Worker(no_color=no_color, quiet=quiet, **arguments)
         worker.start()
 
