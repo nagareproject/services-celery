@@ -9,6 +9,10 @@
 
 from __future__ import absolute_import
 
+import threading
+
+from celery.backends import asynchronous
+
 # ==========
 
 from celery.utils import log
@@ -96,6 +100,7 @@ def create_spec(namespace_name, namespace):
     spec = create_spec_from_celery(namespace_name, namespace)
 
     spec['result']['expires'] = 'float(default={})'.format(24 * 60 * 60)
+    spec['result']['asynchronous_callbacks'] = 'boolean(default=False)'
     spec['broker']['heartbeat_checkrate'] = spec['broker']['heartbeat_checkrate'].replace('integer', 'float')
     spec['worker']['concurrency'] = 'string(default="0")'
     spec['task']['default_delivery_mode'] = spec['task']['default_delivery_mode'].replace('2', 'persistent')
@@ -122,6 +127,15 @@ def create_spec(namespace_name, namespace):
     )
 
     return spec
+
+
+class Drainer(asynchronous.greenletDrainer):
+
+    def spawn(self, run):
+        thread = threading.Thread(target=run, daemon=True)
+        thread.start()
+
+        return thread
 
 
 class _CeleryService(object):
@@ -175,6 +189,9 @@ class _CeleryService(object):
 
         celery_config = collections.AttributeDict(defaults.flatten(celery_config))
         celery_config['beat_schedule'] = schedules
+
+        if celery_config.pop('result_asynchronous_callbacks'):
+            asynchronous.register_drainer('default')(Drainer)
 
         if on_configure:
             reference.load_object(on_configure)[0](celery_config)
