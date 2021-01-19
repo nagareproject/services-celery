@@ -134,6 +134,8 @@ class _CeleryService(object):
           - ``host`` -- address of the memcache server
           - ``port`` -- port of the memcache server
         """
+        self.files = set()
+
         nb_cpus = multiprocessing.cpu_count()
         config['worker']['concurrency'] = eval(config['worker']['concurrency'], {}, {'NB_CPUS': nb_cpus})
 
@@ -179,18 +181,19 @@ class _CeleryService(object):
 
         self.celery = self.CELERY_FACTORY(main, log='nagare.services.celery:Logging', config_source=celery_config)
 
-        self.files = set()
         for task, parameters in app_tasks.items():
-            f = reference.load_object(task)[0]
-            module = sys.modules[f.__module__]
-            task = self.celery.task(**parameters)(f)
-
-            self.files.add(module.__file__)
-            setattr(module, f.__name__, task)
+            self.register_task(reference.load_object(task)[0], **parameters)
 
     @property
     def AsyncResult(self):
         return self.celery.AsyncResult
+
+    def register_task(self, f, **kw):
+        task = self.celery.task(**kw)(f)
+
+        module = sys.modules[f.__module__]
+        self.files.add(module.__file__)
+        setattr(module, f.__name__, task)
 
     def serve(self, no_color, quiet, **arguments):
         app = self.services(self.services['application'].create)
