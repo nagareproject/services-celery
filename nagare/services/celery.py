@@ -11,6 +11,7 @@ from __future__ import absolute_import
 
 import threading
 
+from nagare.server import publisher
 from celery.backends import asynchronous
 
 # ==========
@@ -138,16 +139,27 @@ class Drainer(asynchronous.greenletDrainer):
         return thread
 
 
-class _CeleryService(object):
+class _CeleryService(publisher.Publisher):
     CELERY_FACTORY = celery.Celery
 
-    def __init__(self, name, dist, config_sections, main, on_configure, tasks, **config):
+    def __init__(
+        self,
+        name, dist, config_sections,
+        main, on_configure, watch, tasks,
+        services_service, reloader_service=None,
+        **config
+    ):
         """Initialization
 
         In:
           - ``host`` -- address of the memcache server
           - ``port`` -- port of the memcache server
         """
+        super(_CeleryService, self).__init__(name, dist, **config)
+
+        self.watch = watch
+        self.reloader = reloader_service
+        self.services = services_service
         self.files = set()
 
         nb_cpus = multiprocessing.cpu_count()
@@ -212,11 +224,15 @@ class _CeleryService(object):
         self.files.add(module.__file__)
         setattr(module, f.__name__, task)
 
-    def serve(self, no_color, quiet, **arguments):
-        app = self.services(self.services['application'].create)
+    def print_banner(self):
+        pass
 
-        for service in self.services.start_handlers:
-            self.services(service.handle_start, app)
+    def serve(self, no_color, quiet, **arguments):
+        self.services(super(_CeleryService, self).serve)
+
+        if self.watch and (self.reloader is not None):
+            for filename in self.files:
+                self.reloader.watch_file(filename)
 
         worker = self.celery.Worker(no_color=no_color, quiet=quiet, **arguments)
         worker.start()
@@ -257,11 +273,12 @@ class _CeleryService(object):
 @proxy.proxy_to(_CeleryService, lambda self: self.service, {'handle_start'})
 class CeleryService(plugin.Plugin):
     CONFIG_SPEC = dict(
-        create_spec((), defaults.NAMESPACES),
+        _CeleryService.CONFIG_SPEC,
         main='string(default=nagare.application.$app_name)',
         tasks='list(default=list())',
         on_configure='string(default=None)',
-        watch='boolean(default=True)'
+        watch='boolean(default=True)',
+        **create_spec((), defaults.NAMESPACES)
     )
     service = None
 

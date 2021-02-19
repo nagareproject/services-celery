@@ -11,7 +11,7 @@ from nagare.admin import command
 
 
 class Commands(command.Commands):
-    DESC = 'Celery server commands'
+    DESC = 'Celery server subcommands'
 
 
 class Command(command.Command):
