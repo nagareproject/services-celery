@@ -270,7 +270,7 @@ class _CeleryService(publisher.Publisher):
         control.run(subcommand, *args, **arguments)
 
 
-@proxy.proxy_to(_CeleryService, lambda self: self.service, {'handle_start'})
+@proxy.proxy_to(_CeleryService, lambda self: self.service, {'get_plugin_spec', 'handle_start'})
 class CeleryService(plugin.Plugin):
     CONFIG_SPEC = dict(
         _CeleryService.CONFIG_SPEC,
