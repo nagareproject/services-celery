@@ -48,7 +48,7 @@ from celery.bin import celery as command
 from nagare.server import reference
 from nagare.services import plugin, proxy
 
-SPEC_TYPES = {'int': 'integer', 'bool': 'boolean'}
+SPEC_TYPES = {'str': 'string', 'int': 'integer', 'bool': 'boolean'}
 CRONTAB_PARAMS = ('minute', 'hour', 'day_of_week', 'day_of_month', 'month_of_year')
 BLACK_LIST = {
     'arangodb',
@@ -100,6 +100,7 @@ def create_spec_from_celery(namespace_name, namespace):
 def create_spec(namespace_name, namespace):
     spec = create_spec_from_celery(namespace_name, namespace)
 
+    spec['result']['backend_max_retries'] = 'float(default=float("inf"))'
     spec['result']['expires'] = 'float(default={})'.format(24 * 60 * 60)
     spec['result']['asynchronous_callbacks'] = 'boolean(default=False)'
     spec['broker']['heartbeat_checkrate'] = spec['broker']['heartbeat_checkrate'].replace('integer', 'float')
@@ -274,7 +275,7 @@ class _CeleryService(publisher.Publisher):
 class CeleryService(plugin.Plugin):
     CONFIG_SPEC = dict(
         _CeleryService.CONFIG_SPEC,
-        main='string(default=nagare.application.$app_name)',
+        main='string(default="nagare.application.$app_name")',
         tasks='list(default=list())',
         on_configure='string(default=None)',
         watch='boolean(default=True)',
