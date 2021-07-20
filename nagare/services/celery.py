@@ -276,7 +276,7 @@ class CeleryService(plugin.Plugin):
     CONFIG_SPEC = dict(
         _CeleryService.CONFIG_SPEC,
         main='string(default="nagare.application.$app_name")',
-        tasks='list(default=list())',
+        tasks='string_list(default=list())',
         on_configure='string(default=None)',
         watch='boolean(default=True)',
         **create_spec((), defaults.NAMESPACES)
