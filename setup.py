@@ -74,8 +74,9 @@ setup(
             'inspect=nagare.admin.celery:Inspect',
             'control=nagare.admin.celery:Control',
             'purge=nagare.admin.celery:Purge',
-            'list=nagare.admin.celery:List',
-            'report=nagare.admin.celery:Report'
+            'report=nagare.admin.celery:Report',
+            'call=nagare.admin.celery:Call',
+            'result=nagare.admin.celery:Result'
         ],
 
         'nagare.commands.celery.inspect': [

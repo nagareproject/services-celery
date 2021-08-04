@@ -11,8 +11,9 @@ from __future__ import absolute_import
 
 import threading
 
-from nagare.server import publisher
+from celery.bin import events
 from celery.backends import asynchronous
+from nagare.server import publisher
 
 # ==========
 
@@ -43,7 +44,6 @@ import celery
 from celery.app import defaults
 from celery.utils import collections
 from celery.schedules import crontab
-from celery.bin import celery as command
 
 from nagare.server import reference
 from nagare.services import plugin, proxy
@@ -228,47 +228,53 @@ class _CeleryService(publisher.Publisher):
     def print_banner(self):
         pass
 
-    def serve(self, no_color, quiet, **arguments):
+    def serve(self, subcommand, args, **arguments):
         self.services(super(_CeleryService, self).serve)
 
         if self.watch and (self.reloader is not None):
             for filename in self.files:
                 self.reloader.watch_file(filename)
 
-        worker = self.celery.Worker(no_color=no_color, quiet=quiet, **arguments)
+        worker = self.celery.Worker(**arguments)
         worker.start()
 
         return worker.exitcode
 
-    def beat(self, no_color, quiet, **arguments):
-        self.celery.Beat(no_color=no_color, quiet=quiet, **arguments).run()
+    def beat(self, subcommand, args, **arguments):
+        self.celery.Beat(**arguments).run()
 
-    def events(self, no_color, quiet, **arguments):
-        command.events(self.celery).run(no_color=no_color, quiet=quiet, **arguments)
+    def events(self, subcommand, args, camera, **arguments):
+        if camera:
+            events._run_evcam(camera, self.celery, **arguments)
+        else:
+            events._run_evtop(self.celery)
 
-    def status(self, no_color, quiet, **arguments):
-        command.status(self.celery).run(no_color=no_color, quiet=quiet, **arguments)
+    def status(self, subcommand, args, destination, timeout, **arguments):
+        workers = self.inspect('ping', args, destination, timeout, **arguments) or {}
 
-    def purge(self, no_color, quiet, **arguments):
-        command.purge(self.celery).run(no_color=no_color, quiet=quiet, **arguments)
+        return {name: ({'ok': ''} if 'ok' in status else status) for name, status in workers.items()}
 
-    def list(self, no_color, quiet, bindings):
-        command.list_(self.celery).run(no_color=no_color, quiet=quiet, what=bindings)
+    def report(self, subcommand, args):
+        print(self.celery.bugreport())
 
-    def report(self, no_color, quiet):
-        command.report(self.celery).run(no_color=no_color, quiet=quiet)
+    def call(self, subcommand, args, name, args_, **arguments):
+        print(self.celery.send_task(name, args_, **arguments))
 
-    def inspect(self, subcommand, no_color, quiet, *args, **arguments):
-        inspect = command.inspect(self.celery)
-        inspect.no_color = no_color
-        inspect.quiet = quiet
-        inspect.run(subcommand, *args, **arguments)
+    def result(self, subcommand, args, task_id, traceback):
+        result = self.celery.AsyncResult(task_id)
+        print(result.traceback if traceback else result.get())
 
-    def control(self, subcommand, no_color, quiet, *args, **arguments):
-        control = command.control(self.celery)
-        control.no_color = no_color
-        control.quiet = quiet
-        control.run(subcommand, *args, **arguments)
+    def inspect(self, subcommand, args, destination, timeout, reply=True):
+        inspect = self.celery.control.inspect(destination, timeout)
+        subcommand = getattr(inspect, subcommand)
+
+        return subcommand(*args)
+
+    def control(self, subcommand, args, **arguments):
+        control = self.celery.control
+        subcommand = getattr(control, subcommand)
+
+        return subcommand(*args, **arguments)
 
 
 @proxy.proxy_to(_CeleryService, lambda self: self.service, {'handle_request'})
