@@ -112,7 +112,7 @@ def create_spec(namespace_name, namespace):
         {name: 'string(default=None)' for name in CRONTAB_PARAMS},
         task='string',
         schedule='integer(default=None)',
-        args='string(default="")'
+        args='string(default="()")'
     )
 
     spec['__many__'] = dict(
