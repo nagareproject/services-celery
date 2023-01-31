@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2022 Net-ng.
+# Copyright (c) 2008-2023 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -11,11 +11,12 @@ from __future__ import absolute_import
 
 import threading
 
-from celery.bin import events
 from celery.backends import asynchronous
+from celery.bin import events
 from nagare.server import publisher
 
 # ==========
+# isort: off
 
 from celery.utils import log
 
@@ -34,17 +35,17 @@ from celery.app import log
 class Logging(log.Logging):
     _setup = True
 
+
 # ==========
+# isort: on
 
-
-import sys
 import multiprocessing
+import sys
 
 import celery
 from celery.app import defaults
-from celery.utils import collections
 from celery.schedules import crontab
-
+from celery.utils import collections
 from nagare.server import reference
 from nagare.services import plugin, proxy
 
@@ -59,7 +60,7 @@ BLACK_LIST = {
     'task annotations',
     'task routes',
     'worker log_format',
-    'worker task_log_format'
+    'worker task_log_format',
 }
 
 
@@ -112,19 +113,39 @@ def create_spec(namespace_name, namespace):
         {name: 'string(default=None)' for name in CRONTAB_PARAMS},
         task='string',
         schedule='integer(default=None)',
-        args='string(default="()")'
+        args='string(default="()")',
     )
 
     spec['__many__'] = dict(
-        (param + '(default=None)').split('/') for param in (
-            'Strategie/string', 'typing/boolean', 'Request/string', 'trail/boolean',
-            'send_events/boolean', 'ack_on_failure_or_timeout/boolean',
-            'reject_on_worker_lost/boolean', 'expires/float', 'priority/integer',
-            'name/string', 'max_retries/integer', 'default_retry_delay/float', 'rate_limit/string',
-            'time_limit/integer', 'soft_time_limit/integer', 'ignore_result/boolean',
-            'store_errors_even_if_ignored/boolean', 'serializer/string', 'compression/string',
-            'backend/string', 'acks_late/boolean', 'track_started/boolean', 'lazy/boolean',
-            'bind/boolean', 'retry_backoff/boolean', 'retry_backoff_max/integer', 'retry_jitter/boolean'
+        (param + '(default=None)').split('/')
+        for param in (
+            'Strategie/string',
+            'typing/boolean',
+            'Request/string',
+            'trail/boolean',
+            'send_events/boolean',
+            'ack_on_failure_or_timeout/boolean',
+            'reject_on_worker_lost/boolean',
+            'expires/float',
+            'priority/integer',
+            'name/string',
+            'max_retries/integer',
+            'default_retry_delay/float',
+            'rate_limit/string',
+            'time_limit/integer',
+            'soft_time_limit/integer',
+            'ignore_result/boolean',
+            'store_errors_even_if_ignored/boolean',
+            'serializer/string',
+            'compression/string',
+            'backend/string',
+            'acks_late/boolean',
+            'track_started/boolean',
+            'lazy/boolean',
+            'bind/boolean',
+            'retry_backoff/boolean',
+            'retry_backoff_max/integer',
+            'retry_jitter/boolean',
         )
     )
 
@@ -132,7 +153,6 @@ def create_spec(namespace_name, namespace):
 
 
 class Drainer(asynchronous.greenletDrainer):
-
     def spawn(self, run):
         thread = threading.Thread(target=run, daemon=True)
         thread.start()
@@ -145,12 +165,18 @@ class _CeleryService(publisher.Publisher):
 
     def __init__(
         self,
-        name, dist, config_sections,
-        main, on_configure, watch, tasks,
-        services_service, reloader_service=None,
-        **config
+        name,
+        dist,
+        config_sections,
+        main,
+        on_configure,
+        watch,
+        tasks,
+        services_service,
+        reloader_service=None,
+        **config,
     ):
-        """Initialization
+        """Initialization.
 
         In:
           - ``host`` -- address of the memcache server
@@ -171,7 +197,7 @@ class _CeleryService(publisher.Publisher):
 
         for section, parameters in list(config.items()):
             if isinstance(parameters, dict):
-                if (section not in config_sections):
+                if section not in config_sections:
                     app_tasks[section] = config[section] = {k: v for k, v in parameters.items() if v is not None}
                 else:
                     celery_config[section] = parameters.copy()
@@ -285,7 +311,7 @@ class CeleryService(plugin.Plugin):
         tasks='string_list(default=list())',
         on_configure='string(default=None)',
         watch='boolean(default=True)',
-        **create_spec((), defaults.NAMESPACES)
+        **create_spec((), defaults.NAMESPACES),
     )
     service = None
 

@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2022 Net-ng.
+# Copyright (c) 2008-2023 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -7,7 +7,8 @@
 # this distribution.
 # --
 
-from json import loads, dumps
+from json import dumps, loads
+
 from nagare.admin import command
 
 
@@ -16,24 +17,16 @@ class Commands(command.Commands):
 
 
 class Command(command.Command):
-
     def run(self, command, args=(), **params):
         return command(self.name.replace('-', '_'), args, **params)
 
 
 class CommandWithReply(Command):
-
     def set_arguments(self, parser):
         parser.add_argument(
-            '-t', '--timeout',
-            type=float, default=1.0,
-            help='timeout in seconds (float) waiting for reply'
+            '-t', '--timeout', type=float, default=1.0, help='timeout in seconds (float) waiting for reply'
         )
-        parser.add_argument(
-            '-d', '--destination',
-            action='append',
-            help='destination node name'
-        )
+        parser.add_argument('-d', '--destination', action='append', help='destination node name')
         parser.add_argument('-q', '--quiet', action='store_true', help="don't display anything")
         parser.add_argument('-j', '--json', action='store_true', help='use json as output format')
 
@@ -93,13 +86,9 @@ class Serve(Command):
     def set_arguments(self, parser):
         parser.add_argument('-q', '--quiet', action='store_true', help="don't display anything")
         parser.add_argument('-c', '--no-color', action='store_true')
+        parser.add_argument('-Q', '--queues', help='list of queues to enable for this worker, separated by comma')
         parser.add_argument(
-            '-Q', '--queues',
-            help='list of queues to enable for this worker, separated by comma'
-        )
-        parser.add_argument(
-            '-X', '--exclude-queues',
-            help='list of queues to exclude for this worker, separated by comma'
+            '-X', '--exclude-queues', help='list of queues to exclude for this worker, separated by comma'
         )
 
         super(Serve, self).set_arguments(parser)
@@ -115,10 +104,7 @@ class Beat(Command):
         parser.add_argument('-i', '--interval', type=int, dest='max_interval')
         parser.add_argument('-c', '--no-color', action='store_true')
         parser.add_argument('--db', help='db file name', dest='schedule')
-        parser.add_argument(
-            '-t', '--timeout',
-            type=float, default='10', dest='socket_timeout'
-        )
+        parser.add_argument('-t', '--timeout', type=float, default='10', dest='socket_timeout')
 
         super(Beat, self).set_arguments(parser)
 
@@ -132,9 +118,13 @@ class Events(Command):
     def set_arguments(self, parser):
         parser.add_argument('-c', '--camera', help='take snapshots of events using this camera')
         parser.add_argument(
-            '-f', '--frequency', '--freq',
-            type=float, default='1.0', dest='freq',
-            help='camera shutter frequency. Default is every 1.0 secondes'
+            '-f',
+            '--frequency',
+            '--freq',
+            type=float,
+            default='1.0',
+            dest='freq',
+            help='camera shutter frequency. Default is every 1.0 secondes',
         )
         parser.add_argument('-r', '--maxrate', help='camerao optional shutter rate limit (e.g., 10/m)')
 
@@ -178,7 +168,7 @@ class Call(Command):
             (),
             args_=() if args_ is None else loads(args_),
             kwargs={} if kwargs is None else loads(kwargs),
-            **arguments
+            **arguments,
         )
 
 
@@ -194,6 +184,7 @@ class Result(Command):
     def run(self, celery_service, **arguments):
         return super(Result, self).run(celery_service.result, (), **arguments)
 
+
 # ==========
 
 
@@ -202,7 +193,6 @@ class Inspect(command.Commands):
 
 
 class InspectCommand(CommandWithReply):
-
     def run(self, celery_service, args=(), **params):
         return super(InspectCommand, self).run(celery_service.inspect, args, **params)
 
@@ -239,11 +229,7 @@ class InspectQueryTask(InspectCommand):
     DESC = 'query for task information by id'
 
     def set_arguments(self, parser):
-        parser.add_argument(
-            '-i', '--id',
-            action='append', dest='ids',
-            help='task identifier'
-        )
+        parser.add_argument('-i', '--id', action='append', dest='ids', help='task identifier')
 
         super(InspectQueryTask, self).set_arguments(parser)
 
@@ -255,11 +241,7 @@ class InspectRegistered(InspectCommand):
     DESC = 'list registered tasks'
 
     def set_arguments(self, parser):
-        parser.add_argument(
-            '-a', '--attr',
-            action='append', dest='attributes',
-            help='task attribute to include'
-        )
+        parser.add_argument('-a', '--attr', action='append', dest='attributes', help='task attribute to include')
 
         super(InspectRegistered, self).set_arguments(parser)
 
@@ -286,6 +268,7 @@ class InspectScheduled(InspectCommand):
 class InspectStats(InspectCommand):
     DESC = 'request worker statistics/information'
 
+
 # ==========
 
 
@@ -294,13 +277,11 @@ class Control(command.Commands):
 
 
 class ControlCommand(Command):
-
     def run(self, celery_service, args=(), **params):
         return super(ControlCommand, self).run(celery_service.control, args, **params)
 
 
 class ControlCommandWithReply(CommandWithReply):
-
     def run(self, celery_service, args=(), **params):
         return super(ControlCommandWithReply, self).run(celery_service.control, args, **params)
 
@@ -318,9 +299,7 @@ class ControlAddConsumer(ControlCommandWithReply):
 
     def run(self, celery_service, queue, exchange, exchange_type, routing_key, **arguments):
         return super(ControlAddConsumer, self).run(
-            celery_service,
-            args=[queue, exchange, exchange_type, routing_key],
-            **arguments
+            celery_service, args=[queue, exchange, exchange_type, routing_key], **arguments
         )
 
 

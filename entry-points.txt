@@ -1,0 +1,48 @@
+[nagare.commands]
+celery = nagare.admin.celery:Commands
+
+[nagare.commands.celery]
+serve = nagare.admin.celery:Serve
+beat = nagare.admin.celery:Beat
+events = nagare.admin.celery:Events
+status = nagare.admin.celery:Status
+inspect = nagare.admin.celery:Inspect
+control = nagare.admin.celery:Control
+purge = nagare.admin.celery:Purge
+report = nagare.admin.celery:Report
+call = nagare.admin.celery:Call
+result = nagare.admin.celery:Result
+
+[nagare.commands.celery.inspect]
+report = nagare.admin.celery:InspectReport
+conf = nagare.admin.celery:InspectConf
+query-task = nagare.admin.celery:InspectQueryTask
+clock = nagare.admin.celery:InspectClock
+ping = nagare.admin.celery:InspectPing
+stats = nagare.admin.celery:InspectStats
+scheduled = nagare.admin.celery:InspectScheduled
+reserved = nagare.admin.celery:InspectReserved
+active = nagare.admin.celery:InspectActive
+revoked = nagare.admin.celery:InspectRevoked
+registered = nagare.admin.celery:InspectRegistered
+active-queues = nagare.admin.celery:InspectActiveQueues
+
+[nagare.commands.celery.control]
+revoke = nagare.admin.celery:ControlRevoke
+terminate = nagare.admin.celery:ControlTerminate
+rate-limit = nagare.admin.celery:ControlRateLimit
+time-limit = nagare.admin.celery:ControlTimeLimit
+election = nagare.admin.celery:ControlElection
+enable-events = nagare.admin.celery:ControlEnableEvents
+disable-events = nagare.admin.celery:ControlDisableEvents
+heartbeat = nagare.admin.celery:ControlHeartbeat
+pool-grow = nagare.admin.celery:ControlPoolGrow
+pool-shrink = nagare.admin.celery:ControlPoolShrink
+pool-restart = nagare.admin.celery:ControlPoolRestart
+autoscale = nagare.admin.celery:ControlAutoscale
+shutdown = nagare.admin.celery:ControlShutdown
+add-consumer = nagare.admin.celery:ControlAddConsumer
+cancel-consumer = nagare.admin.celery:ControlCancelConsumer
+
+[nagare.services]
+celery = nagare.services.celery:CeleryService
