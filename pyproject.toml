@@ -25,6 +25,7 @@ requires-python = '>=3.7'
 dependencies = [
     'appdirs',
     'colorama',
+    'celery',
     'nagare-config',
     'nagare-services',
     'nagare-commands'
