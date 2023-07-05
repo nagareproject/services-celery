@@ -61,6 +61,8 @@ BLACK_LIST = {
     'task routes',
     'worker log_format',
     'worker task_log_format',
+    'beat cron_starting_deadline',  # Bug in Celery 5.3.1
+    'security key_password',  # `bytes` type
 }
 
 
@@ -116,37 +118,48 @@ def create_spec(namespace_name, namespace):
         args='string(default="()")',
     )
 
+    # Task options from https://docs.celeryq.dev/en/stable/userguide/tasks.html#list-of-options
     spec['__many__'] = dict(
-        (param + '(default=None)').split('/')
-        for param in (
-            'Strategie/string',
-            'typing/boolean',
-            'Request/string',
-            'trail/boolean',
-            'send_events/boolean',
-            'ack_on_failure_or_timeout/boolean',
-            'reject_on_worker_lost/boolean',
-            'expires/float',
-            'priority/integer',
-            'name/string',
-            'max_retries/integer',
-            'default_retry_delay/float',
-            'rate_limit/string',
-            'time_limit/integer',
-            'soft_time_limit/integer',
-            'ignore_result/boolean',
-            'store_errors_even_if_ignored/boolean',
-            'serializer/string',
-            'compression/string',
-            'backend/string',
-            'acks_late/boolean',
-            'track_started/boolean',
-            'lazy/boolean',
-            'bind/boolean',
-            'retry_backoff/boolean',
-            'retry_backoff_max/integer',
-            'retry_jitter/boolean',
-        )
+        [
+            (param + '(default=None)').split('/')
+            for param in (
+                'bind/boolean',
+                'name/string',
+                'Request/string',
+                'Strategie/string',
+                'typing/boolean',
+                'autoretry_for/string_list',
+                'dont_autoretry_for/string_list',
+                'max_retries/integer',
+                'retry_backoff/boolean',
+                'retry_backoff_max/integer',
+                'retry_jitter/boolean',
+                'throws/string_list',
+                'default_retry_delay/float',
+                'rate_limit/string',
+                'time_limit/integer',
+                'soft_time_limit/integer',
+                'ignore_result/boolean',
+                'store_errors_even_if_ignored/boolean',
+                'serializer/string',
+                'compression/string',
+                'backend/string',
+                'acks_late/boolean',
+                'track_started/boolean',
+                'trail/boolean',
+                'send_events/boolean',
+                'ack_on_failure_or_timeout/boolean',
+                'reject_on_worker_lost/boolean',
+                'expires/float',
+                'priority/integer',
+                'lazy/boolean',
+            )
+        ],
+        retry_kargs={
+            'countdown': 'float(default=None)',
+            'max_retries': 'integer(default=None)',
+            'throw': 'boolean(default=True)',
+        },
     )
 
     return spec
@@ -238,6 +251,10 @@ class _CeleryService(publisher.Publisher):
         self.celery = self.CELERY_FACTORY(main, log='nagare.services.celery:Logging', config_source=celery_config)
 
         for task, parameters in app_tasks.items():
+            for exceptions in ['throws', 'autoretry_for', 'dont_autoretry_for']:
+                if exceptions in parameters:
+                    parameters[exceptions] = [reference.load_object(exc)[0] for exc in parameters[exceptions]]
+
             self.register_task(reference.load_object(task)[0], **parameters)
 
     @property

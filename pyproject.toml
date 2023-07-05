@@ -25,10 +25,11 @@ requires-python = '>=3.7'
 dependencies = [
     'appdirs',
     'colorama',
-    'celery',
+    'celery>5.3.0',
     'nagare-config',
     'nagare-services',
-    'nagare-commands'
+    'nagare-commands',
+    'nagare-server'
 ]
 
 [project.readme]
@@ -98,7 +99,7 @@ skip-string-normalization = true
 
 [tool.ruff]
 select = ['C4', 'COM', 'D', 'E', 'ERA', 'F', 'I', 'ISC', 'INP', 'PIE', 'Q', 'S', 'SIM', 'TID', 'W', 'YTT']
-ignore = ['COM812', 'D10', 'D401']
+ignore = ['COM812', 'D10', 'D401', 'S307']
 line-length = 120
 src = ['src']
 
