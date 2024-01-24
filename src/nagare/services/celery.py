@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2023 Net-ng.
+# Copyright (c) 2008-2024 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -11,8 +11,9 @@ from __future__ import absolute_import
 
 import threading
 
-from celery.backends import asynchronous
 from celery.bin import events
+from celery.backends import asynchronous
+
 from nagare.server import publisher
 
 # ==========
@@ -39,15 +40,16 @@ class Logging(log.Logging):
 # ==========
 # isort: on
 
-import multiprocessing
 import sys
+import multiprocessing
 
 import celery
 from celery.app import defaults
-from celery.schedules import crontab
 from celery.utils import collections
+from celery.schedules import crontab
+
 from nagare.server import reference
-from nagare.services import plugin, proxy
+from nagare.services import proxy, plugin
 
 SPEC_TYPES = {'str': 'string', 'int': 'integer', 'bool': 'boolean'}
 CRONTAB_PARAMS = ('minute', 'hour', 'day_of_week', 'day_of_month', 'month_of_year')
