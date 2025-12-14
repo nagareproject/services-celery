@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2024 Net-ng.
+# Copyright (c) 2014-2025 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -114,7 +114,7 @@ def create_spec(namespace_name, namespace):
     spec['task']['__many__'] = {'queue': 'string'}
 
     spec['beat']['__many__'] = dict(
-        {name: 'string(default=None)' for name in CRONTAB_PARAMS},
+        dict.fromkeys(CRONTAB_PARAMS, 'string(default=None)'),
         task='string',
         schedule='integer(default=None)',
         args='string(default="()")',
@@ -197,7 +197,7 @@ class _CeleryService(publisher.Publisher):
           - ``host`` -- address of the memcache server
           - ``port`` -- port of the memcache server
         """
-        super(_CeleryService, self).__init__(name, dist, **config)
+        super().__init__(name, dist, **config)
 
         self.watch = watch
         self.reloader = reloader_service
@@ -274,7 +274,7 @@ class _CeleryService(publisher.Publisher):
         pass
 
     def serve(self, subcommand, args, **arguments):
-        self.services(super(_CeleryService, self).serve)
+        self.services(super().serve)
 
         if self.watch and (self.reloader is not None):
             for filename in self.files:
@@ -324,18 +324,20 @@ class _CeleryService(publisher.Publisher):
 
 @proxy.proxy_to(_CeleryService, lambda self: self.service, {'handle_request'})
 class CeleryService(plugin.Plugin):
-    CONFIG_SPEC = dict(
-        _CeleryService.CONFIG_SPEC,
-        main='string(default="nagare.application.$app_name")',
-        tasks='string_list(default=list())',
-        on_configure='string(default=None)',
-        watch='boolean(default=True)',
-        **create_spec((), defaults.NAMESPACES),
+    CONFIG_SPEC = (
+        _CeleryService.CONFIG_SPEC
+        | {
+            'main': 'string(default="nagare.application.$app_name")',
+            'tasks': 'string_list(default=list())',
+            'on_configure': 'string(default=None)',
+            'watch': 'boolean(default=True)',
+        }
+        | create_spec((), defaults.NAMESPACES)
     )
     service = None
 
     def __init__(self, name, dist, services_service, **config):
-        services_service(super(CeleryService, self).__init__, name, dist, **config)
+        services_service(super().__init__, name, dist, **config)
 
         config_sections = {section for section, parameters in self.CONFIG_SPEC.items() if isinstance(parameters, dict)}
         self.__class__.service = services_service(_CeleryService, name, dist, config_sections, **config)

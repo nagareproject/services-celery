@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2024 Net-ng.
+# Copyright (c) 2014-2025 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -30,7 +30,7 @@ class CommandWithReply(Command):
         parser.add_argument('-q', '--quiet', action='store_true', help="don't display anything")
         parser.add_argument('-j', '--json', action='store_true', help='use json as output format')
 
-        super(CommandWithReply, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     @staticmethod
     def print_result(workers):
@@ -56,7 +56,7 @@ class CommandWithReply(Command):
             print('')
 
     def run(self, command, args, json, quiet, **arguments):
-        workers = super(CommandWithReply, self).run(command, args, reply=True, **arguments)
+        workers = super().run(command, args, reply=True, **arguments)
         if workers is None:
             if not quiet:
                 print('Error: No nodes replied within time constraint')
@@ -91,10 +91,10 @@ class Serve(Command):
             '-X', '--exclude-queues', help='list of queues to exclude for this worker, separated by comma'
         )
 
-        super(Serve, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, **arguments):
-        return super(Serve, self).run(celery_service.serve, **arguments)
+        return super().run(celery_service.serve, **arguments)
 
 
 class Beat(Command):
@@ -106,10 +106,10 @@ class Beat(Command):
         parser.add_argument('--db', help='db file name', dest='schedule')
         parser.add_argument('-t', '--timeout', type=float, default='10', dest='socket_timeout')
 
-        super(Beat, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, **arguments):
-        return super(Beat, self).run(celery_service.beat, **arguments)
+        return super().run(celery_service.beat, **arguments)
 
 
 class Events(Command):
@@ -128,24 +128,24 @@ class Events(Command):
         )
         parser.add_argument('-r', '--maxrate', help='camerao optional shutter rate limit (e.g., 10/m)')
 
-        super(Events, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, **arguments):
-        return super(Events, self).run(celery_service.events, **arguments)
+        return super().run(celery_service.events, **arguments)
 
 
 class Status(CommandWithReply):
     DESC = 'show list of workers that are online'
 
     def run(self, celery_service, **arguments):
-        return super(Status, self).run(celery_service.status, (), **arguments)
+        return super().run(celery_service.status, (), **arguments)
 
 
 class Report(Command):
     DESC = 'shows information useful to include in bug-reports'
 
     def run(self, celery_service, **arguments):
-        return super(Report, self).run(celery_service.report, (), **arguments)
+        return super().run(celery_service.report, (), **arguments)
 
 
 class Call(Command):
@@ -160,10 +160,10 @@ class Call(Command):
         parser.add_argument('-x', '--exchange', help='custom exchange name')
         parser.add_argument('-r', '--routing-key', help='custom routing key')
 
-        super(Call, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, args_, kwargs, **arguments):
-        return super(Call, self).run(
+        return super().run(
             celery_service.call,
             (),
             args_=() if args_ is None else loads(args_),
@@ -179,10 +179,10 @@ class Result(Command):
         parser.add_argument('task_id', help='task id')
         parser.add_argument('-t', '--traceback', action='store_true', help='print traceback instead')
 
-        super(Result, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, **arguments):
-        return super(Result, self).run(celery_service.result, (), **arguments)
+        return super().run(celery_service.result, (), **arguments)
 
 
 # ==========
@@ -194,7 +194,7 @@ class Inspect(command.Commands):
 
 class InspectCommand(CommandWithReply):
     def run(self, celery_service, args=(), **params):
-        return super(InspectCommand, self).run(celery_service.inspect, args, **params)
+        return super().run(celery_service.inspect, args, **params)
 
 
 class InspectActive(InspectCommand):
@@ -215,10 +215,10 @@ class InspectConf(InspectCommand):
     def set_arguments(self, parser):
         parser.add_argument('-i', '--include', action='store_true', help='include default values')
 
-        super(InspectConf, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, include, **arguments):
-        return super(InspectConf, self).run(celery_service, [include], **arguments)
+        return super().run(celery_service, [include], **arguments)
 
 
 class InspectPing(InspectCommand):
@@ -231,10 +231,10 @@ class InspectQueryTask(InspectCommand):
     def set_arguments(self, parser):
         parser.add_argument('-i', '--id', action='append', dest='ids', help='task identifier')
 
-        super(InspectQueryTask, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, ids, **arguments):
-        return super(InspectQueryTask, self).run(celery_service, ids or [], **arguments)
+        return super().run(celery_service, ids or [], **arguments)
 
 
 class InspectRegistered(InspectCommand):
@@ -243,10 +243,10 @@ class InspectRegistered(InspectCommand):
     def set_arguments(self, parser):
         parser.add_argument('-a', '--attr', action='append', dest='attributes', help='task attribute to include')
 
-        super(InspectRegistered, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, attributes, **arguments):
-        return super(InspectRegistered, self).run(celery_service, attributes or [], **arguments)
+        return super().run(celery_service, attributes or [], **arguments)
 
 
 class InspectReport(InspectCommand):
@@ -278,12 +278,12 @@ class Control(command.Commands):
 
 class ControlCommand(Command):
     def run(self, celery_service, args=(), **params):
-        return super(ControlCommand, self).run(celery_service.control, args, **params)
+        return super().run(celery_service.control, args, **params)
 
 
 class ControlCommandWithReply(CommandWithReply):
     def run(self, celery_service, args=(), **params):
-        return super(ControlCommandWithReply, self).run(celery_service.control, args, **params)
+        return super().run(celery_service.control, args, **params)
 
 
 class ControlAddConsumer(ControlCommandWithReply):
@@ -295,12 +295,10 @@ class ControlAddConsumer(ControlCommandWithReply):
         parser.add_argument('-e', '--exchange-type')
         parser.add_argument('-r', '--routing_key')
 
-        super(ControlAddConsumer, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, queue, exchange, exchange_type, routing_key, **arguments):
-        return super(ControlAddConsumer, self).run(
-            celery_service, args=[queue, exchange, exchange_type, routing_key], **arguments
-        )
+        return super().run(celery_service, args=[queue, exchange, exchange_type, routing_key], **arguments)
 
 
 class ControlAutoscale(ControlCommandWithReply):
@@ -310,10 +308,10 @@ class ControlAutoscale(ControlCommandWithReply):
         parser.add_argument('max', type=int)
         parser.add_argument('min', type=int)
 
-        super(ControlAutoscale, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, max, min, **arguments):
-        return super(ControlAutoscale, self).run(celery_service, [max, min], **arguments)
+        return super().run(celery_service, [max, min], **arguments)
 
 
 class ControlCancelConsumer(ControlCommandWithReply):
@@ -322,10 +320,10 @@ class ControlCancelConsumer(ControlCommandWithReply):
     def set_arguments(self, parser):
         parser.add_argument('queue')
 
-        super(ControlCancelConsumer, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, queue, **arguments):
-        return super(ControlCancelConsumer, self).run(celery_service, [queue], **arguments)
+        return super().run(celery_service, [queue], **arguments)
 
 
 class ControlDisableEvents(ControlCommandWithReply):
@@ -339,7 +337,7 @@ class ControlElection(ControlCommand):
         parser.add_argument('id')
         parser.add_argument('topic')
 
-        super(ControlElection, self).set_arguments(parser)
+        super().set_arguments(parser)
 
 
 class ControlEnableEvents(ControlCommandWithReply):
@@ -356,10 +354,10 @@ class ControlPoolGrow(ControlCommandWithReply):
     def set_arguments(self, parser):
         parser.add_argument('nb', type=int)
 
-        super(ControlPoolGrow, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, nb, **arguments):
-        return super(ControlPoolGrow, self).run(celery_service, [nb], **arguments)
+        return super().run(celery_service, [nb], **arguments)
 
 
 class ControlPoolRestart(ControlCommandWithReply):
@@ -369,7 +367,7 @@ class ControlPoolRestart(ControlCommandWithReply):
         parser.add_argument('-m', '--module', action='append', dest='modules')
         parser.add_argument('-r', '--reload', action='store_true')
 
-        super(ControlPoolRestart, self).set_arguments(parser)
+        super().set_arguments(parser)
 
 
 class ControlPoolShrink(ControlCommandWithReply):
@@ -378,10 +376,10 @@ class ControlPoolShrink(ControlCommandWithReply):
     def set_arguments(self, parser):
         parser.add_argument('nb', type=int)
 
-        super(ControlPoolShrink, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, nb, **arguments):
-        return super(ControlPoolShrink, self).run(celery_service, [nb], **arguments)
+        return super().run(celery_service, [nb], **arguments)
 
 
 class ControlRateLimit(ControlCommandWithReply):
@@ -391,10 +389,10 @@ class ControlRateLimit(ControlCommandWithReply):
         parser.add_argument('task')
         parser.add_argument('rate_limit', help='e.g. 5/s | 5/m | 5/h')
 
-        super(ControlRateLimit, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, task, rate_limit, **arguments):
-        return super(ControlRateLimit, self).run(celery_service, [task, rate_limit], **arguments)
+        return super().run(celery_service, [task, rate_limit], **arguments)
 
 
 class ControlRevoke(ControlCommandWithReply):
@@ -403,10 +401,10 @@ class ControlRevoke(ControlCommandWithReply):
     def set_arguments(self, parser):
         parser.add_argument('-i', '--id', action='append', help='task id', dest='ids')
 
-        super(ControlRevoke, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, ids, **arguments):
-        return super(ControlRevoke, self).run(celery_service, [ids or []], **arguments)
+        return super().run(celery_service, [ids or []], **arguments)
 
 
 class ControlShutdown(ControlCommandWithReply):
@@ -420,10 +418,10 @@ class ControlTerminate(ControlCommandWithReply):
         parser.add_argument('-s', '--signal', type=int)
         parser.add_argument('-i', '--id', action='append', help='task id', dest='ids')
 
-        super(ControlTerminate, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, signal, ids, **arguments):
-        return super(ControlTerminate, self).run(celery_service, [ids or []], signal=signal, **arguments)
+        return super().run(celery_service, [ids or []], signal=signal, **arguments)
 
 
 class ControlTimeLimit(ControlCommandWithReply):
@@ -434,10 +432,10 @@ class ControlTimeLimit(ControlCommandWithReply):
         parser.add_argument('soft_secs')
         parser.add_argument('hard_secs')
 
-        super(ControlTimeLimit, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     def run(self, celery_service, task_name, soft_secs, hard_secs, **arguments):
-        return super(ControlTimeLimit, self).run(celery_service, [task_name, soft_secs, hard_secs], **arguments)
+        return super().run(celery_service, [task_name, soft_secs, hard_secs], **arguments)
 
 
 class Purge(ControlCommand):
