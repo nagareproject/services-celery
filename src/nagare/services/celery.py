@@ -14,7 +14,7 @@ import threading
 from celery.bin import events
 from celery.backends import asynchronous
 
-from nagare.server import publisher
+from nagare.publishers import publisher
 
 # ==========
 # isort: off
