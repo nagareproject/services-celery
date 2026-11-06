@@ -65,6 +65,7 @@ BLACK_LIST = {
     'worker task_log_format',
     'beat cron_starting_deadline',  # Bug in Celery 5.3.1
     'security key_password',  # `bytes` type
+    'database engine_callback',  # Celery 5.7.0
 }
 
 
