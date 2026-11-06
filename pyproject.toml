@@ -73,15 +73,6 @@ yaml = ['celery[yaml]']
 zookeeper = ['celery[zookeeper]']
 zstd = ['celery[zstd]']
 
-dev = [
-    'sphinx',
-    'sphinx_rtd_theme',
-    'pre-commit',
-    'ruff',
-    'pytest',
-    'twine'
-]
-
 [project.urls]
 Homepage = 'https://nagare.org'
 Documentation = 'https://nagare.org/doc'
